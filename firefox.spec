@@ -178,7 +178,7 @@ URL:            https://www.mozilla.org/firefox/
 License:        MPLv1.1 or GPLv2+ or LGPLv2+
 Source0:        https://archive.mozilla.org/pub/firefox/releases/%{version}%{?pre_version}/source/firefox-%{version}%{?pre_version}.source.tar.xz
 %if %{with langpacks}
-Source1:        https://src.fedoraproject.org/repo/pkgs/firefox/firefox-langpacks-%{version}%{?pre_version}-20230111.tar.xz
+Source1:        https://src.fedoraproject.org/repo/pkgs/firefox/firefox-langpacks-109.0.1-20230201.tar.xz/sha512/d8497c53466650d06db44382b6e8a1ac337205c820f67b9a635a7ecc7001eaa4b9391de3f7e88e2f3602510150c54e128723915366438c296f7e15e729f87fb2/firefox-langpacks-109.0.1-20230201.tar.xz
 %endif
 Source2:        cbindgen-vendor.tar.xz
 Source10:       firefox-mozconfig
