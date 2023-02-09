@@ -831,8 +831,8 @@ desktop-file-install --dir %{buildroot}%{_datadir}/applications %{SOURCE31}
 desktop-file-install --dir %{buildroot}%{_datadir}/applications %{SOURCE29}
 
 # set up the firefox start script
-# rm -rf %{buildroot}%{_bindir}/firefox
-# sed -e 's,/__PREFIX__,%{_prefix},g' %{SOURCE21} > %{buildroot}%{_bindir}/firefox
+rm -rf %{buildroot}%{_bindir}/firefox
+sed -e 's,/__PREFIX__,%{_prefix},g' %{SOURCE21} > %{buildroot}%{_bindir}/firefox
 chmod 755 %{buildroot}%{_bindir}/firefox
 
 %if 0%{?flatpak}
