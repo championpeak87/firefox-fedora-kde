@@ -831,8 +831,8 @@ desktop-file-install --dir %{buildroot}%{_datadir}/applications %{SOURCE31}
 desktop-file-install --dir %{buildroot}%{_datadir}/applications %{SOURCE29}
 
 # set up the firefox start script
-rm -rf %{buildroot}%{_bindir}/firefox
-ln -s /usr/lib64/firefox/firefox %{buildroot}%{_bindir}/firefox
+# rm -rf %{buildroot}%{_bindir}/firefox
+# sed -e 's,/__PREFIX__,%{_prefix},g' %{SOURCE21} > %{buildroot}%{_bindir}/firefox
 chmod 755 %{buildroot}%{_bindir}/firefox
 
 %if 0%{?flatpak}
@@ -1585,7 +1585,6 @@ fi
 
 * Mon Jan 11 2021 Martin Stransky <stransky@redhat.com> - 84.0.2-2
 - Added a workaround for rhbz#1908018
-
 
 * Wed Jan 6 2021 Martin Stransky <stransky@redhat.com> - 84.0.2-1
 - Updated to 84.0.2
