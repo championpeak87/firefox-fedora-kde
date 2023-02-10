@@ -171,8 +171,8 @@ ExcludeArch: i686
 %undefine _package_note_flags
 
 Summary:        Mozilla Firefox Web browser
-Name:           firefox
-Version:        109.0
+Name:           firefox-appmenu
+Version:        109.0.1
 Release:        1%{?pre_tag}%{?dist}
 URL:            https://www.mozilla.org/firefox/
 License:        MPLv1.1 or GPLv2+ or LGPLv2+
