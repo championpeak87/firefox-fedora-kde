@@ -556,8 +556,8 @@ This package contains results of tests executed during build.
 %patch1100 -p1 -b .ppc-mobzuild
 
 # KDE patches
-%patch2000 -p1 -b .fix-wayland-build
-%patch2002 -p1 -b .fix_csd_window_buttons
+#%patch2000 -p1 -b .fix-wayland-build
+#%patch2002 -p1 -b .fix_csd_window_buttons
 %patch2003 -p1 -b .mozilla-kde
 %patch2004 -p1 -b .firefox-kde
 %patch2001 -p1 -b .unity-menubar
