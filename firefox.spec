@@ -178,7 +178,7 @@ URL:            https://www.mozilla.org/firefox/
 License:        MPLv1.1 or GPLv2+ or LGPLv2+
 Source0:        https://archive.mozilla.org/pub/firefox/releases/%{version}%{?pre_version}/source/firefox-%{version}%{?pre_version}.source.tar.xz
 %if %{with langpacks}
-Source1:        firefox-langpacks-%{version}%{?pre_version}-20230214.tar.xz
+Source1:        https://src.fedoraproject.org/repo/pkgs/firefox/firefox-langpacks-110.0-20230214.tar.xz/sha512/63b8a4428674393cd1d0742708c7c300e9a85d6b294f8fb281b773373db5735208f8d27df7fe769ddba259743f76502e0bf20e953736ebc78a9b3178afa5ecf7/firefox-langpacks-110.0-20230214.tar.xz
 %endif
 Source2:        cbindgen-vendor.tar.xz
 Source10:       firefox-mozconfig
@@ -266,6 +266,13 @@ Patch1000:       libwebrtc-screen-cast-sync.patch
 
 # Work around broken moz.build file on ppc64le (mozb#1779545, mozb#1775202)
 Patch1100:       mozilla-1775202.patch
+
+# Kde patches
+# Patch2000:      fix-wayland-build.patch
+Patch2003:      mozilla-kde.patch
+Patch2004:      firefox-kde.patch
+Patch2001:      unity-menubar.patch
+# Patch2002:      fix_csd_window_buttons.patch
 
 %if %{?system_nss}
 BuildRequires:  pkgconfig(nspr) >= %{nspr_version}
@@ -425,7 +432,7 @@ Provides:       webclient
 
 %description
 Mozilla Firefox is an open-source web browser, designed for standards
-compliance, performance and portability.
+compliance, performance and portability. Custom fork version with global menu patches.
 
 %if %{with langpacks_subpkg}
 %package langpacks
@@ -547,6 +554,13 @@ This package contains results of tests executed during build.
 %endif
 
 %patch1100 -p1 -b .ppc-mobzuild
+
+# KDE patches
+%patch2000 -p1 -b .fix-wayland-build
+%patch2002 -p1 -b .fix_csd_window_buttons
+%patch2003 -p1 -b .mozilla-kde
+%patch2004 -p1 -b .firefox-kde
+%patch2001 -p1 -b .unity-menubar
 
 rm -f .mozconfig
 cp %{SOURCE10} .mozconfig
