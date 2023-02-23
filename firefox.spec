@@ -173,7 +173,7 @@ ExcludeArch: i686
 Summary:        Mozilla Firefox Web browser
 Name:           firefox
 Version:        110.0
-Release:        3%{?pre_tag}%{?dist}
+Release:        1%{?pre_tag}%{?dist}
 URL:            https://www.mozilla.org/firefox/
 License:        MPLv1.1 or GPLv2+ or LGPLv2+
 Source0:        https://archive.mozilla.org/pub/firefox/releases/%{version}/source/firefox-%{version}.source.tar.xz
@@ -266,6 +266,12 @@ Patch1000:       libwebrtc-screen-cast-sync.patch
 
 # Work around broken moz.build file on ppc64le (mozb#1779545, mozb#1775202)
 Patch1100:       mozilla-1775202.patch
+
+# Firedragon patches
+Patch2000:       firefox-kde.patch
+Patch2001:       mozilla-kde.patch
+Patch2002:       unity-menubar.patch
+Patch2003:       mozilla-nongnome-proxies.patch
 
 %if %{?system_nss}
 BuildRequires:  pkgconfig(nspr) >= %{nspr_version}
@@ -547,6 +553,12 @@ This package contains results of tests executed during build.
 %endif
 
 %patch1100 -p1 -b .ppc-mobzuild
+
+# Firedragon patches
+%patch2001 -p1 -b .mozilla-kde
+%patch2000 -p1 -b .firefox-kde
+%patch2002 -p1 -b .unity-menubar
+%patch2003 -p1 -b .mozilla-nongnome-proxies
 
 rm -f .mozconfig
 cp %{SOURCE10} .mozconfig
