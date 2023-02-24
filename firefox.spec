@@ -272,6 +272,7 @@ Patch2000:       firefox-kde.patch
 Patch2001:       mozilla-kde.patch
 Patch2002:       unity-menubar.patch
 Patch2003:       mozilla-nongnome-proxies.patch
+Patch2004:       fix_csd_window_buttons.patch
 
 %if %{?system_nss}
 BuildRequires:  pkgconfig(nspr) >= %{nspr_version}
@@ -555,6 +556,7 @@ This package contains results of tests executed during build.
 %patch1100 -p1 -b .ppc-mobzuild
 
 # Firedragon patches
+%patch2004 -p1 -b .fix_csd_window_buttons
 %patch2001 -p1 -b .mozilla-kde
 %patch2000 -p1 -b .firefox-kde
 %patch2002 -p1 -b .unity-menubar
