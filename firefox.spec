@@ -171,7 +171,7 @@ ExcludeArch: i686
 %undefine _package_note_flags
 
 Summary:        Mozilla Firefox Web browser
-Name:           firefox
+Name:           firefox-kde
 Version:        110.0
 Release:        3%{?pre_tag}%{?dist}
 URL:            https://www.mozilla.org/firefox/
@@ -441,7 +441,7 @@ Requires: %{name} = %{version}-%{release}
 %description langpacks
 The firefox-langpacks package contains all the localization
 and translations langpack add-ons.
-%files langpacks -f %{name}.lang
+%files langpacks -f firefox.lang
 %dir %{langpackdir}
 %endif
 
@@ -449,10 +449,10 @@ and translations langpack add-ons.
 %global moz_debug_prefix %{_prefix}/lib/debug
 %global moz_debug_dir %{moz_debug_prefix}%{mozappdir}
 %global uname_m %(uname -m)
-%global symbols_file_name %{name}-%{version}.en-US.%{_os}-%{uname_m}.crashreporter-symbols.zip
+%global symbols_file_name firefox-%{version}.en-US.%{_os}-%{uname_m}.crashreporter-symbols.zip
 %global symbols_file_path %{moz_debug_dir}/%{symbols_file_name}
 %global _find_debuginfo_opts -p %{symbols_file_path} -o debugcrashreporter.list
-%global crashreporter_pkg_name mozilla-crashreporter-%{name}-debuginfo
+%global crashreporter_pkg_name mozilla-crashreporter-firefox-debuginfo
 %package -n %{crashreporter_pkg_name}
 Summary: Debugging symbols used by Mozilla's crash reporter servers
 %description -n %{crashreporter_pkg_name}
@@ -483,7 +483,7 @@ to run Firefox explicitly on Wayland.
 %{_datadir}/applications/firefox-wayland.desktop
 
 %if 0%{?run_firefox_tests}
-%global testsuite_pkg_name %{name}-testresults
+%global testsuite_pkg_name firefox-testresults
 %package -n %{testsuite_pkg_name}
 Summary: Results of testsuite
 %description -n %{testsuite_pkg_name}
@@ -868,7 +868,7 @@ mkdir -p %{buildroot}%{_datadir}/icons/hicolor/symbolic/apps
 cp -p %{SOURCE25} \
       %{buildroot}%{_datadir}/icons/hicolor/symbolic/apps
 
-echo > %{name}.lang
+echo > firefox.lang
 %if %{with langpacks}
 # Extract langpacks, make any mods needed, repack the langpack, and install it.
 mkdir -p %{buildroot}%{langpackdir}
@@ -887,9 +887,9 @@ for langpack in `ls firefox-langpacks/*.xpi`; do
   install -m 644 ${extensionID}.xpi %{buildroot}%{langpackdir}
   language=`echo $language | sed -e 's/-/_/g'`
 %if 0%{?flatpak}
-  echo "%{langpackdir}/${extensionID}.xpi" >> %{name}.lang
+  echo "%{langpackdir}/${extensionID}.xpi" >> firefox.lang
 %else
-  echo "%%lang($language) %{langpackdir}/${extensionID}.xpi" >> %{name}.lang
+  echo "%%lang($language) %{langpackdir}/${extensionID}.xpi" >> firefox.lang
 %endif
 done
 rm -rf firefox-langpacks
@@ -901,7 +901,7 @@ language_short=$2
 cd %{buildroot}%{langpackdir}
 ln -s langpack-$language_long@firefox.mozilla.org.xpi langpack-$language_short@firefox.mozilla.org.xpi
 cd -
-echo "%%lang($language_short) %{langpackdir}/langpack-$language_short@firefox.mozilla.org.xpi" >> %{name}.lang
+echo "%%lang($language_short) %{langpackdir}/langpack-$language_short@firefox.mozilla.org.xpi" >> firefox.lang
 }
 
 # Table of fallbacks for each language
@@ -924,7 +924,7 @@ create_default_langpack "zh-TW" "zh"
 mkdir -p %{buildroot}/%{mozappdir}/browser/defaults/preferences
 
 # System config dir
-mkdir -p %{buildroot}/%{_sysconfdir}/%{name}/pref
+mkdir -p %{buildroot}/%{_sysconfdir}/firefox/pref
 
 # System extensions
 mkdir -p %{buildroot}%{_datadir}/mozilla/extensions/%{firefox_app_id}
@@ -1030,17 +1030,17 @@ fi
 %if %{with langpacks_subpkg}
 %files
 %else
-%files -f %{name}.lang
+%files -f firefox.lang
 %endif
 %{_bindir}/firefox
 %{mozappdir}/firefox
 %{mozappdir}/firefox-bin
 %doc %{_mandir}/man1/*
-%dir %{_sysconfdir}/%{name}
-%dir %{_sysconfdir}/%{name}/*
+%dir %{_sysconfdir}/firefox
+%dir %{_sysconfdir}/firefox/*
 %dir %{_datadir}/mozilla/extensions/*
 %dir %{_libdir}/mozilla/extensions/*
-%{_datadir}/applications/%{name}.desktop
+%{_datadir}/applications/firefox.desktop
 %{_datadir}/metainfo/*.appdata.xml
 %{_datadir}/gnome-shell/search-providers/*.ini
 %dir %{mozappdir}
