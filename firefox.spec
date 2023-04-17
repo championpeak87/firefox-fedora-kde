@@ -125,7 +125,7 @@ ExcludeArch: i686
 %if %{?system_nss}
 %global nspr_version 4.32
 %global nspr_build_version %{nspr_version}
-%global nss_version 3.86
+%global nss_version 3.88
 %global nss_build_version %{nss_version}
 %endif
 
@@ -169,16 +169,18 @@ ExcludeArch: i686
 %global __requires_exclude ^(%%(find %{buildroot}%{mozappdir} -name '*.so' | xargs -n1 basename | sort -u | paste -s -d '|' -))
 
 %undefine _package_note_flags
+# for https://bugzilla.redhat.com/show_bug.cgi?id=2184553
+%global _package_note_status 0
 
 Summary:        Mozilla Firefox Web browser
-Name:           firefox-kde
-Version:        111.0
-Release:        1%{?pre_tag}%{?dist}
+Name:           firefox
+Version:        112.0
+Release:        3%{?pre_tag}%{?dist}
 URL:            https://www.mozilla.org/firefox/
 License:        MPLv1.1 or GPLv2+ or LGPLv2+
-Source0:        https://archive.mozilla.org/pub/firefox/releases/%{version}/source/firefox-%{version}.source.tar.xz
+Source0:        https://archive.mozilla.org/pub/firefox/releases/%{version}%{?pre_version}/source/firefox-%{version}%{?pre_version}.source.tar.xz
 %if %{with langpacks}
-Source1:        https://src.fedoraproject.org/repo/pkgs/firefox/firefox-langpacks-110.0-20230214.tar.xz/sha512/63b8a4428674393cd1d0742708c7c300e9a85d6b294f8fb281b773373db5735208f8d27df7fe769ddba259743f76502e0bf20e953736ebc78a9b3178afa5ecf7/firefox-langpacks-110.0-20230214.tar.xz
+Source1:        https://src.fedoraproject.org/repo/pkgs/firefox/firefox-langpacks-112.0-20230406.tar.xz/sha512/11870eec9947b11be404016b6426f13c86b37be7d0021bf7ae640151d17df35212bfb4c1c14aef5948dcd49312b47daf582f2367f5ba4d2f81dfc8ce64d9609d/firefox-langpacks-112.0-20230406.tar.xz
 %endif
 Source2:        cbindgen-vendor.tar.xz
 Source10:       firefox-mozconfig
@@ -226,8 +228,8 @@ Patch61:        firefox-glibc-dynstack.patch
 Patch71:        0001-GLIBCXX-fix-for-GCC-12.patch
 Patch78:        firefox-i686-build.patch
 Patch79:        firefox-gcc-13-build.patch
-Patch80:        D167194.diff
-Patch81:        D169197.diff
+#Patch80:        D172126.diff
+#Patch81:        D172864.diff
 
 # Test patches
 # Generate without context by
@@ -240,7 +242,6 @@ Patch102:       firefox-tests-xpcshell-freeze.patch
 # Fedora specific patches
 Patch215:        firefox-enable-addons.patch
 Patch219:        rhbz-1173156.patch
-Patch224:        mozilla-1170092.patch
 #ARM run-time patch
 Patch226:        rhbz-1354671.patch
 Patch228:        disable-openh264-download.patch
@@ -252,7 +253,10 @@ Patch402:        mozilla-1196777.patch
 Patch407:        mozilla-1667096.patch
 Patch408:        mozilla-1663844.patch
 Patch415:        mozilla-1670333.patch
-Patch418:        mozilla-1813500.patch
+# https://phabricator.services.mozilla.com/D173021
+Patch416:        libwebrtc-pipewire-capturer-import-dmabuf-directly-into-desktop-frame.patch
+Patch417:        mozilla-1826583.patch
+Patch418:        mozilla-1827429.patch
 
 # PGO/LTO patches
 Patch600:        pgo.patch
@@ -261,11 +265,14 @@ Patch602:        mozilla-1516803.patch
 # a patch for compiling with gcc on arm (from debian)
 Patch990:        work-around-GCC-ICE-on-arm.patch
 
-# Backported WebRTC changes for PipeWire/Wayland screen sharing support
-Patch1000:       libwebrtc-screen-cast-sync.patch
-
 # Work around broken moz.build file on ppc64le (mozb#1779545, mozb#1775202)
 Patch1100:       mozilla-1775202.patch
+
+# tentative patch for RUSTFLAGS parsing issue:
+# https://bugzilla.redhat.com/show_bug.cgi?id=2184743
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1474486
+# not upstreaming till I'm more sure it's correct
+Patch1200:       firefox-112.0-commasplit.patch
 
 # Firedragon patches
 Patch2000:       firefox-kde.patch
@@ -426,6 +433,7 @@ BuildRequires:  xorg-x11-fonts-misc
 BuildRequires:  make
 BuildRequires:  pciutils-libs
 BuildRequires:  mesa-libgbm-devel
+BuildRequires:  libproxy-devel
 
 Obsoletes:      mozilla <= 37:1.7.13
 Provides:       webclient
@@ -441,7 +449,7 @@ Requires: %{name} = %{version}-%{release}
 %description langpacks
 The firefox-langpacks package contains all the localization
 and translations langpack add-ons.
-%files langpacks -f firefox.lang
+%files langpacks -f %{name}.lang
 %dir %{langpackdir}
 %endif
 
@@ -449,10 +457,10 @@ and translations langpack add-ons.
 %global moz_debug_prefix %{_prefix}/lib/debug
 %global moz_debug_dir %{moz_debug_prefix}%{mozappdir}
 %global uname_m %(uname -m)
-%global symbols_file_name firefox-%{version}.en-US.%{_os}-%{uname_m}.crashreporter-symbols.zip
+%global symbols_file_name %{name}-%{version}.en-US.%{_os}-%{uname_m}.crashreporter-symbols.zip
 %global symbols_file_path %{moz_debug_dir}/%{symbols_file_name}
 %global _find_debuginfo_opts -p %{symbols_file_path} -o debugcrashreporter.list
-%global crashreporter_pkg_name mozilla-crashreporter-firefox-debuginfo
+%global crashreporter_pkg_name mozilla-crashreporter-%{name}-debuginfo
 %package -n %{crashreporter_pkg_name}
 Summary: Debugging symbols used by Mozilla's crash reporter servers
 %description -n %{crashreporter_pkg_name}
@@ -483,7 +491,7 @@ to run Firefox explicitly on Wayland.
 %{_datadir}/applications/firefox-wayland.desktop
 
 %if 0%{?run_firefox_tests}
-%global testsuite_pkg_name firefox-testresults
+%global testsuite_pkg_name %{name}-testresults
 %package -n %{testsuite_pkg_name}
 Summary: Results of testsuite
 %description -n %{testsuite_pkg_name}
@@ -513,8 +521,8 @@ This package contains results of tests executed during build.
 %patch71 -p1 -b .0001-GLIBCXX-fix-for-GCC-12
 %patch78 -p1 -b .firefox-i686
 %patch79 -p1 -b .firefox-gcc-13-build
-%patch80 -p1 -b .D167194
-%patch81 -p1 -b .D169197
+#%patch80 -p1 -b .D172126
+#%patch81 -p1 -b .D172864
 
 # Test patches
 #%patch100 -p1 -b .firefox-tests-xpcshell
@@ -524,7 +532,6 @@ This package contains results of tests executed during build.
 # Fedora patches
 %patch215 -p1 -b .addons
 %patch219 -p1 -b .rhbz-1173156
-%patch224 -p1 -b .1170092
 #ARM run-time patch
 %ifarch aarch64
 %patch226 -p1 -b .1354671
@@ -537,7 +544,9 @@ This package contains results of tests executed during build.
 %patch407 -p1 -b .1667096
 %patch408 -p1 -b .1663844
 %patch415 -p1 -b .1670333
-%patch418 -p1 -b .1813500
+%patch416 -p1 -b .libwebrtc-pipewire-capturer-import-dmabuf-directly-into-desktop-frame
+%patch417 -p1 -b .1826583
+%patch418 -p1 -b .1827429
 
 # PGO patches
 %if %{build_with_pgo}
@@ -548,12 +557,8 @@ This package contains results of tests executed during build.
 %endif
 
 %patch990 -p1 -b .work-around-GCC-ICE-on-arm
-
-%ifnarch ppc64le %{arm} aarch64
-%patch1000 -p1 -b .libwebrtc-screen-cast-sync
-%endif
-
 %patch1100 -p1 -b .ppc-mobzuild
+%patch1200 -p1 -b .rustflags-commasplit
 
 # Firedragon patches
 %patch2004 -p1 -b .fix_csd_window_buttons
@@ -868,7 +873,7 @@ mkdir -p %{buildroot}%{_datadir}/icons/hicolor/symbolic/apps
 cp -p %{SOURCE25} \
       %{buildroot}%{_datadir}/icons/hicolor/symbolic/apps
 
-echo > firefox.lang
+echo > %{name}.lang
 %if %{with langpacks}
 # Extract langpacks, make any mods needed, repack the langpack, and install it.
 mkdir -p %{buildroot}%{langpackdir}
@@ -887,9 +892,9 @@ for langpack in `ls firefox-langpacks/*.xpi`; do
   install -m 644 ${extensionID}.xpi %{buildroot}%{langpackdir}
   language=`echo $language | sed -e 's/-/_/g'`
 %if 0%{?flatpak}
-  echo "%{langpackdir}/${extensionID}.xpi" >> firefox.lang
+  echo "%{langpackdir}/${extensionID}.xpi" >> %{name}.lang
 %else
-  echo "%%lang($language) %{langpackdir}/${extensionID}.xpi" >> firefox.lang
+  echo "%%lang($language) %{langpackdir}/${extensionID}.xpi" >> %{name}.lang
 %endif
 done
 rm -rf firefox-langpacks
@@ -901,7 +906,7 @@ language_short=$2
 cd %{buildroot}%{langpackdir}
 ln -s langpack-$language_long@firefox.mozilla.org.xpi langpack-$language_short@firefox.mozilla.org.xpi
 cd -
-echo "%%lang($language_short) %{langpackdir}/langpack-$language_short@firefox.mozilla.org.xpi" >> firefox.lang
+echo "%%lang($language_short) %{langpackdir}/langpack-$language_short@firefox.mozilla.org.xpi" >> %{name}.lang
 }
 
 # Table of fallbacks for each language
@@ -924,7 +929,7 @@ create_default_langpack "zh-TW" "zh"
 mkdir -p %{buildroot}/%{mozappdir}/browser/defaults/preferences
 
 # System config dir
-mkdir -p %{buildroot}/%{_sysconfdir}/firefox/pref
+mkdir -p %{buildroot}/%{_sysconfdir}/%{name}/pref
 
 # System extensions
 mkdir -p %{buildroot}%{_datadir}/mozilla/extensions/%{firefox_app_id}
@@ -1030,17 +1035,17 @@ fi
 %if %{with langpacks_subpkg}
 %files
 %else
-%files -f firefox.lang
+%files -f %{name}.lang
 %endif
 %{_bindir}/firefox
 %{mozappdir}/firefox
 %{mozappdir}/firefox-bin
 %doc %{_mandir}/man1/*
-%dir %{_sysconfdir}/firefox
-%dir %{_sysconfdir}/firefox/*
+%dir %{_sysconfdir}/%{name}
+%dir %{_sysconfdir}/%{name}/*
 %dir %{_datadir}/mozilla/extensions/*
 %dir %{_libdir}/mozilla/extensions/*
-%{_datadir}/applications/firefox.desktop
+%{_datadir}/applications/%{name}.desktop
 %{_datadir}/metainfo/*.appdata.xml
 %{_datadir}/gnome-shell/search-providers/*.ini
 %dir %{mozappdir}
@@ -1098,6 +1103,33 @@ fi
 #---------------------------------------------------------------------
 
 %changelog
+* Tue Apr 11 2023 Martin Stransky <stransky@redhat.com>- 112.0-3
+- Added wayland window fix mzbz#1827429
+
+* Thu Apr 6 2023 Martin Stransky <stransky@redhat.com>- 112.0-2
+- Updated to 112.0 build 2
+- don't crash on wayland logging (mzbz#1826583/rhbz#2184842).
+
+* Wed Apr 5 2023 Martin Stransky <stransky@redhat.com>- 112.0-1
+- Updated to 112.0
+
+* Wed Apr 5 2023 Martin Stransky <stransky@redhat.com>- 111.0.1-2
+- Don't override MOZ_USE_XINPUT2 in startup script (hrbz#2184297) by GalaxyMaster
+
+* Wed Mar 22 2023 Martin Stransky <stransky@redhat.com>- 111.0.1-1
+- Updated to 111.0.1
+
+* Tue Mar 21 2023 Jan Grulich <jgrulich@redhat.com> - 111.0-3
+- libwebrtc: backport upstream fix/improvement for DmaBuf screen sharing
+
+* Tue Mar 21 2023 Martin Stransky <stransky@redhat.com>- 111.0-2
+- Added libproxy support (rhbz#2177806)
+- Added build fixes on arm
+
+* Mon Mar 20 2023 Martin Stransky <stransky@redhat.com>- 111.0-1
+- Updated to 111.0
+- Disabled arm on F36
+
 * Tue Feb 14 2023 Martin Stransky <stransky@redhat.com>- 110.0-3
 - Updated to 110.0 build 3
 
