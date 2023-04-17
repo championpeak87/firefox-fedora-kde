@@ -563,7 +563,7 @@ This package contains results of tests executed during build.
 # Firedragon patches
 %patch2004 -p1 -b .fix_csd_window_buttons
 %patch2001 -p1 -b .mozilla-kde
-%patch2000 -p1 -b .firefox-kde
+#%patch2000 -p1 -b .firefox-kde
 %patch2002 -p1 -b .unity-menubar
 %patch2003 -p1 -b .mozilla-nongnome-proxies
 
